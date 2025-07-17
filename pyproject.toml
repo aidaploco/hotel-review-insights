@@ -1,0 +1,65 @@
+[project]
+name = "hotel-review-insights"
+version = "0.1.0"
+description = "An LLM & Agents project for hotel review analysis using RAG."
+authors = [
+    { name = "Aida" }
+]
+readme = "README.md"
+requires-python = ">=3.12"
+keywords = ["llm", "agents", "rag", "hotel-reviews", "nlp", "machine-learning"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "chromadb~=1.0.10",
+    "kagglehub~=0.3.12",
+    "langchain~=0.3.24",
+    "langchain-chroma~=0.2.4",
+    "langchain-google-genai~=2.1.5",
+    "langchain-huggingface~=0.2.0",
+    "mypy~=1.16.0",
+    "pandas~=2.2.3",
+    "pandas-stubs~=2.2.3.250527",
+    "pytest~=8.4.0",
+    "python-dotenv~=1.1.0",
+    "requests~=2.32.3",
+    "ruff~=0.11.10",
+    "tenacity~=9.1.2",
+    "types-requests~=2.32.0.20250515",
+    # Hugging Face dependencies
+    "transformers~=4.51.0",
+    "torch~=2.7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/aidaploco/hotel-review-insights"
+"Bug Tracker" = "https://github.com/aidaploco/hotel-review-insights/issues"
+
+[build-system]
+requires = ["setuptools>=78.1"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 120
+lint.select = ["E", "F", "W", "I"] # Basic error, flake8, warning, isort checks
+lint.ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = "kagglehub"
+ignore_missing_imports = true

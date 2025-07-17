@@ -1,0 +1,39 @@
+# Environment variables
+.env
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.pytest_cache/
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# IDE-specific files
+.vscode/
+*.iml
+
+# Operating System files
+.DS_Store
+
+# Data files
+data/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+hotel_review_insights.egg-info/
+
+# Logs
+*.log
