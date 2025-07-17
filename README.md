@@ -1,4 +1,5 @@
-Hotel Review Insights
+# Hotel Review Insights
+
 An LLM & Agents project for extracting insights and answering questions from hotel reviews using Retrieval-Augmented Generation (RAG).
 
 🌟 Overview
@@ -30,7 +31,6 @@ torch: PyTorch deep learning framework (for Hugging Face models)
 
 Create a .env file in the root of your project (next to pyproject.toml) and add your Google API Key and desired LLM configuration:
 
-# .env file
 GOOGLE_API_KEY="YOUR_GOOGLE_GEMINI_API_KEY" # Required if LLM_MODEL_TYPE is 'gemini'
 LLM_MODEL_TYPE="gemini" # Options: "gemini" or "huggingface"
 LLM_MODEL_NAME="gemini-2.0-flash" # For Gemini: "gemini-2.0-flash", "gemini-1.5-flash", etc.
