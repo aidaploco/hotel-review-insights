@@ -31,27 +31,31 @@ torch: PyTorch deep learning framework (for Hugging Face models)
 
 Create a .env file in the root of your project (next to pyproject.toml) and add your Google API Key and desired LLM configuration:
 
-GOOGLE_API_KEY="YOUR_GOOGLE_GEMINI_API_KEY" (Required if LLM_MODEL_TYPE is 'gemini')
-LLM_MODEL_TYPE="gemini" (Options: "gemini" or "huggingface")
-LLM_MODEL_NAME="gemini-2.0-flash" (For Gemini: "gemini-2.0-flash", "gemini-1.5-flash", etc. For Hugging Face: "google/flan-t5-small", etc.)
-EMBEDDING_MODEL_NAME="all-MiniLM-L6-v2" (Recommended for embeddings)
+```env
+GOOGLE_API_KEY="YOUR_GOOGLE_GEMINI_API_KEY" # Required if LLM_MODEL_TYPE is 'gemini'
+LLM_MODEL_TYPE="gemini" # Options: "gemini" or "huggingface"
+LLM_MODEL_NAME="gemini-2.0-flash" # For Gemini: "gemini-2.0-flash", "gemini-1.5-flash", etc. For Hugging Face: "google/flan-t5-small", etc.
+EMBEDDING_MODEL_NAME="all-MiniLM-L6-v2" # Recommended for embeddings
+```
 
 📁 Project Structure
+```
 .
-├── .env                  Environment variables (ignored by Git)
-├── .gitignore            Specifies intentionally untracked files to ignore
-├── pyproject.toml        Project metadata and dependencies (managed by uv)
+├── .env                      # Environment variables (ignored by Git)
+├── .gitignore                # Specifies intentionally untracked files to ignore
+├── pyproject.toml            # Project metadata and dependencies (managed by uv)
 ├── src/
-│   ├── __init__.py       Makes 'src' a Python package
-│   ├── config.py         Centralized configuration settings
-│   ├── data_preprocessing.py Handles data loading, cleaning, and vector store creation
-│   ├── rag_agent.py      Implements the RAG logic with LLM and retrieval chain
-│   └── main.py           Main entry point for the application
-└── tests/                Unit and integration tests
+│   ├── __init__.py           # Makes 'src' a Python package
+│   ├── config.py             # Centralized configuration settings
+│   ├── data_preprocessing.py # Handles data loading, cleaning, and vector store creation
+│   ├── rag_agent.py          # Implements the RAG logic with LLM and retrieval chain
+│   └── main.py               # Main entry point for the application
+└── tests/                    # Unit and integration tests
     ├── __init__.py
     ├── test_config.py
     ├── test_data_preprocessing.py
     └── test_rag_agent.py
+```
 
 📄 License
 This project is licensed under the MIT License - see the LICENSE file for details.
