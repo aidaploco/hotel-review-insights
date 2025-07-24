@@ -107,7 +107,8 @@ class HotelReviewRAGAgent:
     @retry(
         stop=stop_after_attempt(5),  # Try up to 5 times
         wait=wait_exponential(multiplier=1, min=4, max=10),  # Exponential backoff: 4s, 8s, etc., up to 10s max
-        retry=(retry_if_exception_type(requests.exceptions.RequestException) | # Retry on any requests exception (including 429, 5xx)
+        # Retry on any requests exception (including 429, 5xx)
+        retry=(retry_if_exception_type(requests.exceptions.RequestException) |
                retry_if_exception_type(ValueError)) # Also retry on ValueError, common for LangChain API errors
     )
     def ask_question(self, question: str) -> Dict[str, Any]:
