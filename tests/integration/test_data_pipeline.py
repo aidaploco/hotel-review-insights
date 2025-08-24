@@ -1,9 +1,12 @@
-def test_full_data_pipeline_to_vector_store(populated_vector_store):
+import pytest
+
+
+@pytest.mark.parametrize('populated_vector_store', ['data_pipeline_db'], indirect=True)
+def test_data_pipeline(populated_vector_store):
     """
     Verifies that load_and_preprocess_data correctly feeds into
     create_and_populate_vector_store and a real ChromaDB is populated.
     """
-    # 1. Verify ChromaDB was created/populated and is accessible
     assert populated_vector_store is not None
     
     # 2. Verify it contains the correct number of documents

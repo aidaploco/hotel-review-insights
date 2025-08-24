@@ -5,10 +5,15 @@ import pandas as pd
 from unittest.mock import patch
 
 from src.data_preprocessing import load_and_preprocess_data, create_and_populate_vector_store
-from src.config import CHROMA_COLLECTION_NAME, KAGGLE_DATASET_HANDLE, KAGGLE_CSV_FILENAME, EMBEDDING_MODEL_NAME
+from src.config import (
+    CHROMA_COLLECTION_NAME,
+    KAGGLE_DATASET_HANDLE,
+    KAGGLE_CSV_FILENAME,
+    EMBEDDING_MODEL_NAME
+)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def dummy_csv_for_rag(tmp_path_factory):
     """
     Creates a dummy CSV file in a temporary directory to simulate a KaggleHub download.
@@ -42,13 +47,14 @@ def dummy_csv_for_rag(tmp_path_factory):
     
     return str(download_dir)
 
-@pytest.fixture(scope="module")
-def populated_vector_store(dummy_csv_for_rag, tmp_path_factory):
+@pytest.fixture
+def populated_vector_store(dummy_csv_for_rag, tmp_path_factory, request):
     """
     Loads data and populates a real ChromaDB instance using actual embeddings.
     This fixture is shared by both integration tests.
     """
-    test_db_path = tmp_path_factory.mktemp("chroma_db_test")
+    db_name = getattr(request, 'param', 'db_path')
+    test_db_path = tmp_path_factory.mktemp(db_name)
     if os.path.exists(test_db_path):
         shutil.rmtree(test_db_path)
 
