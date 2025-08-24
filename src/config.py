@@ -25,3 +25,6 @@ EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
 # --- ChromaDB Parameters ---
 CHROMA_DB_PATH = os.path.join(DATA_DIR, "chroma_db")
 CHROMA_COLLECTION_NAME = "hotel_reviews"
+
+# --- Retrieval Parameters ---
+RETRIEVER_K = 5
