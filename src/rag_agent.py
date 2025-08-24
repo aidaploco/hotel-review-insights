@@ -13,7 +13,14 @@ from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from config import GOOGLE_API_KEY, LLM_MAX_OUTPUT_TOKENS, LLM_MODEL_NAME, LLM_MODEL_TYPE, LLM_TEMPERATURE
+from config import (
+    GOOGLE_API_KEY,
+    LLM_MAX_OUTPUT_TOKENS,
+    LLM_MODEL_NAME,
+    LLM_MODEL_TYPE,
+    LLM_TEMPERATURE,
+    RETRIEVER_K
+)
 
 logger = logging.getLogger(__name__)
 
@@ -33,57 +40,78 @@ class HotelReviewRAGAgent:
     An agent that performs Retrieval-Augmented Generation (RAG) on hotel reviews.
     It retrieves relevant review snippets from a vector store and uses an LLM
     to answer questions based on the retrieved context.
+
+    Args:
+        vector_store (Chroma): The vector store containing embedded hotel reviews.
+        llm_type (str, optional): The type of LLM to use ("gemini" or "huggingface").
+        llm_name (str, optional): The model name for the LLM ("gemini-2.0-flash" or "google/flan-t5-base").
+        temperature (float, optional): LLM temperature setting (default: 0.7).
+        max_output_tokens (int, optional): Maximum tokens for LLM output (default: 800).
+        retriever_k (int, optional): Number of documents to retrieve per query (default: 5).
+        google_api_key (str, optional): API key for Gemini models.
     """
-    def __init__(self, vector_store: Chroma):
+    def __init__(
+        self,
+        vector_store: Chroma,
+        llm_type: str = LLM_MODEL_TYPE,
+        llm_name: str = LLM_MODEL_NAME,
+        temperature: float = LLM_TEMPERATURE,
+        max_output_tokens: int = LLM_MAX_OUTPUT_TOKENS,
+        retriever_k: int = RETRIEVER_K,
+        google_api_key: str = GOOGLE_API_KEY
+    ):
         self.vector_store = vector_store
+        self.llm_type = llm_type
+        self.llm_name = llm_name
+        self.temperature = temperature
+        self.max_output_tokens = max_output_tokens
+        self.retriever_k = retriever_k
+        self.google_api_key = google_api_key
+
         self.llm = self._initialize_llm()
         self.retrieval_chain = self._initialize_retrieval_chain()
-        logger.info(f"HotelReviewRAGAgent initialized with {LLM_MODEL_TYPE} LLM and new retrieval chain.")
 
     def _initialize_llm(self):
         """
         Initializes the appropriate LLM (Gemini or Hugging Face) based on LLM_MODEL_TYPE.
         """
-        if LLM_MODEL_TYPE.lower() == "gemini":
-            if not GOOGLE_API_KEY:
+        if self.llm_type.lower() == "gemini":
+            if not self.google_api_key:
+                logger.error("GOOGLE_API_KEY is missing for Gemini LLM initialization.")
                 raise ValueError("GOOGLE_API_KEY is required for Gemini models.")
-            logger.info(f"Initializing Gemini LLM: {LLM_MODEL_NAME}")
-            llm = ChatGoogleGenerativeAI(
-                model=LLM_MODEL_NAME,
-                temperature=LLM_TEMPERATURE,
-                max_output_tokens=LLM_MAX_OUTPUT_TOKENS,
-                google_api_key=GOOGLE_API_KEY,
+            logger.info(f"Initializing Gemini LLM: {self.llm_name}")
+            return ChatGoogleGenerativeAI(
+                model=self.llm_name,
+                temperature=self.temperature,
+                max_output_tokens=self.max_output_tokens,
+                google_api_key=self.google_api_key,
             )
-        elif LLM_MODEL_TYPE.lower() == "huggingface":
+        elif self.llm_type.lower() == "huggingface":
             if not HUGGING_FACE:
-                raise ImportError("""Hugging Face 'transformers' or 'torch' not installed.
-                                  Cannot initialize Hugging Face LLM.""")
-            logger.info(f"Initializing Hugging Face LLM: {LLM_MODEL_NAME}")
-            # Load tokenizer and model
-            tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL_NAME)
-            model = AutoModelForSeq2SeqLM.from_pretrained(LLM_MODEL_NAME)
-
-            # Create a Hugging Face pipeline for text generation
+                logger.error("Hugging Face 'transformers' or 'torch' not installed.")
+                raise ImportError("Hugging Face 'transformers' or 'torch' not installed.")
+            logger.info(f"Initializing Hugging Face LLM: {self.llm_name}")
+            tokenizer = AutoTokenizer.from_pretrained(self.llm_name)
+            model = AutoModelForSeq2SeqLM.from_pretrained(self.llm_name)
             llm_pipeline = pipeline(
-                "text2text-generation",  # Suitable for Flan-T5
+                "text2text-generation",
                 model=model,
                 tokenizer=tokenizer,
-                max_new_tokens=LLM_MAX_OUTPUT_TOKENS,
-                temperature=LLM_TEMPERATURE,
+                max_new_tokens=self.max_output_tokens,
+                temperature=self.temperature,
                 do_sample=True,
-                device=0 if torch.cuda.is_available() else -1,  # Use GPU if available
+                device=0 if torch.cuda.is_available() else -1,
             )
-            llm = HuggingFacePipeline(pipeline=llm_pipeline)
+            return HuggingFacePipeline(pipeline=llm_pipeline)
         else:
-            raise ValueError(f"Unsupported LLM_MODEL_TYPE: {LLM_MODEL_TYPE}. Choose 'gemini' or 'huggingface'.")
-        return llm
+            logger.error(f"Unsupported LLM_MODEL_TYPE: {self.llm_type}")
+            raise ValueError(f"Unsupported LLM_MODEL_TYPE: {self.llm_type}. Choose 'gemini' or 'huggingface'.")
 
     def _initialize_retrieval_chain(self):
         """
         Initializes the LangChain retrieval chain using LCEL.
         """
-        # 1. Define the prompt template for combining documents
-        # This prompt is for the LLM to generate an answer based on the retrieved context.
+        # Define the prompt template for combining documents
         prompt = ChatPromptTemplate.from_messages([
             ("system", """Answer the user's question based on the provided context.
              If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -91,14 +119,13 @@ class HotelReviewRAGAgent:
             ("user", "{input}")
         ])
 
-        # 2. Create the document combining chain (stuff documents into prompt)
+        # Create the document combining chain (stuff documents into prompt)
         document_chain = create_stuff_documents_chain(self.llm, prompt)
 
-        # 3. Create a retriever from the vector store
-        retriever = self.vector_store.as_retriever(search_kwargs={"k": 5}) # Retrieve top 5 most relevant chunks
+        # Create a retriever from the vector store
+        retriever = self.vector_store.as_retriever(search_kwargs={"k": self.retriever_k})
 
-        # 4. Create the full retrieval chain
-        # This chain takes the user's question, retrieves documents, and then passes them to the document_chain
+        # Create the full retrieval chain
         retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
         return retrieval_chain
@@ -138,66 +165,3 @@ class HotelReviewRAGAgent:
         except Exception as e:
             logger.error(f"Error asking question to RAG agent (attempting retry if configured): {e}", exc_info=True)
             raise  # Re-raise to be caught by the tenacity decorator or main function's try-except
-
-
-if __name__ == "__main__":
-    # Configure basic logging for direct execution of this script
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-    # This block requires a pre-populated ChromaDB.
-    # For a full test, run main.py first to ensure the DB is created.
-
-    from config import CHROMA_COLLECTION_NAME, CHROMA_DB_PATH, EMBEDDING_MODEL_NAME
-
-    try:
-        # Load the vector store
-        # Need to ensure embeddings are initialized for Chroma to load/create
-        embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
-        vector_store = None
-
-        if os.path.exists(CHROMA_DB_PATH):
-            try:
-                vector_store = Chroma(
-                    persist_directory=CHROMA_DB_PATH,
-                    embedding_function=embeddings,
-                    collection_name=CHROMA_COLLECTION_NAME
-                )
-                if vector_store._collection.count() == 0:
-                    logger.error("Existing ChromaDB is empty, run main.py first")
-                else:
-                    logger.info("Successfully loaded existing ChromaDB for RAG agent test.")
-            except Exception as e:
-                logger.error(f"Could not load existing ChromaDB for RAG test: {e}")
-        else:
-            logger.error("ChromaDB not found, run main.py first")
-
-        if vector_store:
-            agent = HotelReviewRAGAgent(vector_store=vector_store)
-
-            # Example questions
-            questions = [
-                "What are the common complaints about staff in hotels?",
-                "Tell me about positive experiences with hotel rooms.",
-                "Are there any reviews mentioning issues with breakfast?",
-                "What is the overall sentiment regarding hotel locations?",
-                "Summarize reviews about cleanliness."
-            ]
-
-            for q in questions:
-                try:
-                    response = agent.ask_question(q)
-                    logger.info(f"\n--- Question: {response['query']} ---")
-                    logger.info(f"Answer: {response['result']}")
-                    logger.info("Source Documents (truncated):")
-                    for i, doc in enumerate(response["source_documents"]):
-                        logger.info(f"""  Doc {i+1} (Hotel: {doc.metadata.get('hotel_name', 'N/A')},
-                                    Nationality: {doc.metadata.get('reviewer_nationality', 'N/A')}):
-                                    {doc.page_content[:200]}...""")
-                except Exception as inner_e:
-                    logger.error(f"Failed to get answer for question '{q}' after retries: {inner_e}")
-        else:
-            logger.error("Vector store could not be initialized for RAG agent test.")
-
-    except Exception as e:
-        logger.critical(f"An error occurred during RAG agent test: {e}", exc_info=True)
-        logger.error("Ensure all required libraries are installed and .env variables are set correctly.")
