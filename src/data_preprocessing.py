@@ -19,8 +19,11 @@ from config import (
 logger = logging.getLogger(__name__)
 
 
-def load_and_preprocess_data(data_dir: str = DATA_DIR, kaggle_dataset_handle: str = KAGGLE_DATASET_HANDLE,
-                             kaggle_csv_filename: str = KAGGLE_CSV_FILENAME) -> pd.DataFrame:
+def load_and_preprocess_data(
+    data_dir: str = DATA_DIR,
+    kaggle_dataset_handle: str = KAGGLE_DATASET_HANDLE,
+    kaggle_csv_filename: str = KAGGLE_CSV_FILENAME
+) -> pd.DataFrame:
     """
     Loads the raw hotel review dataset, combines positive and negative reviews,
     and performs basic cleaning. Attempts to download from KaggleHub if not found locally.
@@ -177,27 +180,3 @@ def create_and_populate_vector_store(
 
     logger.info("ChromaDB population complete and persisted to disk.")
     return vector_store
-
-
-if __name__ == "__main__":
-    # Configure basic logging for direct execution of this script
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-    # Example usage:
-    reviews_df = load_and_preprocess_data()
-    if not reviews_df.empty:
-        # Limit for quick testing
-        reviews_df_sample = reviews_df.head(10)
-        logger.info(f"Creating vector store with {len(reviews_df_sample)} sample reviews...")
-        vector_store = create_and_populate_vector_store(reviews_df_sample)
-        logger.info(f"Vector store created/loaded with {vector_store._collection.count()} documents.")
-
-        # Example of querying the vector store
-        query = "What are the common complaints about staff?"
-        logger.info(f"\nSearching for documents related to: '{query}'")
-        retrieved_docs = vector_store.similarity_search(query, k=3)
-        logger.info("Retrieved documents:")
-        for i, doc in enumerate(retrieved_docs):
-            logger.info(f"--- Document {i+1} ---")
-            logger.info(f"Content: {doc.page_content[:200]}...")
-            logger.info(f"Metadata: {doc.metadata}")
