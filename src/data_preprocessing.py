@@ -7,7 +7,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 
-from config import (
+from src.config import (
     CHROMA_COLLECTION_NAME,
     CHROMA_DB_PATH,
     DATA_DIR,

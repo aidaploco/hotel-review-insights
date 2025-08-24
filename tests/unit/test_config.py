@@ -1,7 +1,7 @@
 from importlib import reload
 from unittest.mock import patch
 
-import config
+import src.config as config
 
 
 def test_google_api_key_loaded():

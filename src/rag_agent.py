@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Any, Dict
 
 import requests
@@ -10,17 +9,10 @@ from langchain.chains.retrieval import create_retrieval_chain
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
-from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
+from langchain_huggingface import HuggingFacePipeline
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from config import (
-    GOOGLE_API_KEY,
-    LLM_MAX_OUTPUT_TOKENS,
-    LLM_MODEL_NAME,
-    LLM_MODEL_TYPE,
-    LLM_TEMPERATURE,
-    RETRIEVER_K
-)
+from src.config import GOOGLE_API_KEY, LLM_MAX_OUTPUT_TOKENS, LLM_MODEL_NAME, LLM_MODEL_TYPE, LLM_TEMPERATURE, RETRIEVER_K
 
 logger = logging.getLogger(__name__)
 

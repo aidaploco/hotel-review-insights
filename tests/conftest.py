@@ -1,16 +1,12 @@
 import os
-import pytest
 import shutil
-import pandas as pd
 from unittest.mock import patch
 
-from src.data_preprocessing import load_and_preprocess_data, create_and_populate_vector_store
-from src.config import (
-    CHROMA_COLLECTION_NAME,
-    KAGGLE_DATASET_HANDLE,
-    KAGGLE_CSV_FILENAME,
-    EMBEDDING_MODEL_NAME
-)
+import pandas as pd
+import pytest
+
+from src.config import CHROMA_COLLECTION_NAME, EMBEDDING_MODEL_NAME, KAGGLE_CSV_FILENAME, KAGGLE_DATASET_HANDLE
+from src.data_preprocessing import create_and_populate_vector_store, load_and_preprocess_data
 
 
 @pytest.fixture
@@ -44,7 +40,7 @@ def dummy_csv_for_rag(tmp_path_factory):
     }
     df = pd.DataFrame(data)
     df.to_csv(csv_file_path, index=False)
-    
+
     return str(download_dir)
 
 @pytest.fixture
@@ -73,6 +69,6 @@ def populated_vector_store(dummy_csv_for_rag, tmp_path_factory, request):
             collection_name=CHROMA_COLLECTION_NAME
         )
         yield vector_store
-    
+
     if os.path.exists(test_db_path):
         shutil.rmtree(test_db_path)

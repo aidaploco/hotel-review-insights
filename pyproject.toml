@@ -53,13 +53,21 @@ known-first-party = ["src"]
 
 [tool.mypy]
 python_version = "3.12"
+mypy_path = "."
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 namespace_packages = true
 explicit_package_bases = true
-mypy_path = ["src", "tests"]
 
 [[tool.mypy.overrides]]
 module = "kagglehub"
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "."
+]
+testpaths = [
+    "tests"
+]

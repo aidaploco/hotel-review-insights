@@ -4,7 +4,7 @@ import pytest
 import requests
 import tenacity
 
-from rag_agent import HotelReviewRAGAgent
+from src.rag_agent import HotelReviewRAGAgent
 
 
 @pytest.fixture
@@ -43,8 +43,8 @@ def patch_agent_initialization(mock_llm, mock_retrieval_chain):
     Patches the _initialize_llm and _initialize_retrieval_chain methods of HotelReviewRAGAgent
     to return our mock instances.
     """
-    with patch('rag_agent.HotelReviewRAGAgent._initialize_llm', return_value=mock_llm), \
-         patch('rag_agent.HotelReviewRAGAgent._initialize_retrieval_chain', return_value=mock_retrieval_chain):
+    with patch('src.rag_agent.HotelReviewRAGAgent._initialize_llm', return_value=mock_llm), \
+         patch('src.rag_agent.HotelReviewRAGAgent._initialize_retrieval_chain', return_value=mock_retrieval_chain):
         yield mock_retrieval_chain # Yield the mock_retrieval_chain so tests can configure it
 
 

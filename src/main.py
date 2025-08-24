@@ -1,8 +1,8 @@
 import logging
 
-from config import CHROMA_COLLECTION_NAME, CHROMA_DB_PATH, EMBEDDING_MODEL_NAME, LLM_MODEL_TYPE
-from data_preprocessing import create_and_populate_vector_store, load_and_preprocess_data
-from rag_agent import HotelReviewRAGAgent
+from src.config import CHROMA_COLLECTION_NAME, CHROMA_DB_PATH, EMBEDDING_MODEL_NAME, LLM_MODEL_TYPE
+from src.data_preprocessing import create_and_populate_vector_store, load_and_preprocess_data
+from src.rag_agent import HotelReviewRAGAgent
 
 logging.basicConfig(
     level=logging.INFO,

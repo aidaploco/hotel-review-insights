@@ -5,7 +5,7 @@ from unittest.mock import ANY, MagicMock, patch
 import pandas as pd
 import pytest
 
-from data_preprocessing import create_and_populate_vector_store, load_and_preprocess_data
+from src.data_preprocessing import create_and_populate_vector_store, load_and_preprocess_data
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def dummy_csv(tmp_path):
 @pytest.fixture
 def mock_embeddings():
     """Mocks HuggingFaceEmbeddings."""
-    with patch('data_preprocessing.HuggingFaceEmbeddings') as mock_hf_embeddings:
+    with patch('src.data_preprocessing.HuggingFaceEmbeddings') as mock_hf_embeddings:
         mock_instance = MagicMock()
         mock_hf_embeddings.return_value = mock_instance
         yield mock_instance
@@ -34,7 +34,7 @@ def mock_embeddings():
 @pytest.fixture
 def mock_chroma():
     """Mocks ChromaDB."""
-    with patch('data_preprocessing.Chroma') as mock_chroma_class:
+    with patch('src.data_preprocessing.Chroma') as mock_chroma_class:
         mock_instance = MagicMock()
         mock_instance._collection.count.return_value = 0 # Default to empty collection for initial load check
         mock_chroma_class.return_value = mock_instance
@@ -48,7 +48,7 @@ def mock_chroma():
 def test_load_and_preprocess_data_local_file(dummy_csv):
     """Tests loading and preprocessing from a local CSV file."""
     # Mock kagglehub.dataset_download to ensure it's not called
-    with patch('data_preprocessing.kagglehub.dataset_download') as mock_download:
+    with patch('src.data_preprocessing.kagglehub.dataset_download') as mock_download:
         df = load_and_preprocess_data(data_dir=str(dummy_csv.parent), kaggle_csv_filename=dummy_csv.name)
         mock_download.assert_not_called() # Ensure download was not attempted
 
@@ -62,7 +62,7 @@ def test_load_and_preprocess_data_local_file(dummy_csv):
 def test_load_and_preprocess_data_kaggle_download(tmp_path):
     """Tests loading and preprocessing when data needs to be downloaded from KaggleHub."""
     # Simulate kagglehub download by returning a path to our dummy CSV
-    with patch('data_preprocessing.kagglehub.dataset_download', return_value=str(tmp_path)) as mock_download:
+    with patch('src.data_preprocessing.kagglehub.dataset_download', return_value=str(tmp_path)) as mock_download:
         # Create the dummy CSV in the mocked download path
         data = {
             "Hotel_Name": ["Hotel X"],
@@ -96,7 +96,7 @@ def test_load_and_preprocess_data_empty_reviews(tmp_path):
     csv_path = tmp_path / "empty_reviews.csv"
     df.to_csv(csv_path, index=False)
 
-    with patch('data_preprocessing.kagglehub.dataset_download'):
+    with patch('src.data_preprocessing.kagglehub.dataset_download'):
         processed_df = load_and_preprocess_data(data_dir=str(tmp_path), kaggle_csv_filename="empty_reviews.csv")
         assert processed_df.empty
 
